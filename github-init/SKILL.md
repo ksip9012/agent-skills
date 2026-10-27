@@ -102,71 +102,16 @@ gh label create "research" --color "#fbca04" --description "技術調査・検�
 
 ### 5. CI ワークフローの生成
 
-プロジェクト種別に応じて `.github/workflows/ci.yml` を生成する。
+プロジェクト種別に応じて、このスキルの `ci/` にあるひな形を `.github/workflows/ci.yml` にコピーする。判定した種別のものだけ読む。
 
-**Python:**
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install ruff pytest
-      - run: ruff check .
-      - run: pytest
-```
+| 種別 | ひな形 |
+|---|---|
+| Python | `ci/python.yml` |
+| Node.js / JavaScript / TypeScript | `ci/node.yml` |
+| dotfiles / shell | `ci/shell.yml` |
+| Go | `ci/go.yml` |
 
-**Node.js / JavaScript / TypeScript:**
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
-```
-
-**dotfiles / shell:**
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  shellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get install -y shellcheck
-      - run: find . -name "*.sh" -exec shellcheck {} +
-```
-
-**Go:**
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-      - run: go test ./...
-```
-
-**汎用:** CI ファイルは生成せず、ユーザーに確認する。
+**Docker・汎用:** CI ファイルは生成せず、ユーザーに確認する。
 
 ### 6. 完了報告
 
