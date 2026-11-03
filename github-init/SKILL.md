@@ -1,95 +1,51 @@
 ---
 name: github-init
-description: 新規プロジェクトの GitHub 環境を初期化する。git init や gh repo create の直後に呼び出す。Issue テンプレート・PR テンプレートの生成とラベルのセットアップを行う。
+description: 新規プロジェクトの土台を初期化する。git init や gh repo create の直後、または「プロジェクトを始めたい」「ひな形を置いて」と頼まれたときに呼び出す。dotfiles のひな形（mise.toml・pre-commit・CI・.gitignore・ADR）を言語に合わせて置き、Issue・PR テンプレートとラベル、Dependabot をセットアップする。
 user-invocable: true
 allowed-tools: Bash, Read, Glob, Write
 ---
 
-# GitHub 環境初期化スキル
+# プロジェクト初期化スキル
 
-新規プロジェクトで `/github-init` を呼び出すと、プロジェクトの種別を自動判定してテンプレートとラベルをセットアップする。
+新しいプロジェクトに、`~/.dotfiles/templates/` のひな形と GitHub まわりの設定を置く。ひな形の中身と決めた理由は dotfiles にある（`~/.dotfiles/templates/README.md`、`~/.dotfiles/decisions/`）。このスキルはそれを読んで置くだけにし、ひな形の中身をここに書かない（dotfiles の ADR 0001）。
+
+## 目標
+
+- 終わったときに、`mise run check` が通る状態になっている（言語のひな形があるとき）
+- 既にあるファイルは壊さない
 
 ## 手順
 
-### 1. プロジェクト種別の判定
+### 1. 言語と場所を判定する
 
-以下のファイルを確認してプロジェクト種別を判定する：
+- 言語: 今あるファイルや、ユーザーの話から判定する（`pyproject.toml` → Python、`go.mod` → Go など）。空のフォルダなら聞く
+- ひな形があるか: `~/.dotfiles/templates/<言語>/` があるかを見る（`ls ~/.dotfiles/templates/`）
+- 場所: カレントディレクトリのパスで判定する（dotfiles の ADR 0004）
+  - `~/Documents/codes/personal-products/` → CI を置く
+  - `~/Documents/codes/playground/` → CI を置くか聞く
+  - `~/Documents/codes/work/` → 仕事の相手のルールに従うので、CI を置くか聞く
+  - それ以外 → 聞く
 
-```bash
-ls -1
-```
+判定した結果（言語・ひな形の有無・CI を置くか）をユーザーに確認してから次に進む。
 
-| ファイル | 判定 |
-|---|---|
-| `requirements.txt` / `pyproject.toml` / `setup.py` | Python |
-| `package.json` | Node.js / JavaScript / TypeScript |
-| `Brewfile` / `.zshrc` / `*.zsh` | dotfiles / shell |
-| `Dockerfile` / `docker-compose.yml` | Docker |
-| `go.mod` | Go |
-| 上記なし | 汎用 |
+### 2. ひな形を置く
 
-複数該当する場合は最も主要なものを選ぶ。判定結果をユーザーに確認してから次に進む。
+`templates/common/` と `templates/<言語>/` を置く。
 
-### 2. Issue テンプレートの生成
+- 既にあるファイルは上書きしない。ぶつかるものがあれば、一覧を見せて、どうするか聞く
+- `.gitignore` は、common と言語のものを足し合わせる。既にあれば、ない行だけ足す
+- 名前の置き換え: `package-name`（`pyproject.toml` の name）と `package_name`（`src/` の下のフォルダと、テストの import）を、プロジェクトの名前にする。Python のパッケージ名はハイフンをアンダースコアにする
+- CI を置かないときは、`.github/workflows/` と `.github/dependabot.yml` を置かない
+- **言語のひな形がないとき**: `mise run check` のタスクがないので、CI と pre-commit を置かない。common の残り（`.gitignore`・`decisions/`）だけ置き、「言語のひな形がないので、`mise.toml` に `[tasks.check]` を書いてから CI と pre-commit を置く」と知らせる
 
-ベーステンプレートを `~/.dotfiles/github/ISSUE_TEMPLATE/` から読み込み、プロジェクト種別に応じて調整する。
+### 3. GitHub まわりを置く
 
-#### 種別ごとの調整内容
-
-**Python:**
-- `bug_report.md` の環境欄に以下を追加：
-  ```
-  - Python Version: [e.g. 3.12]
-  - 仮想環境: [venv / poetry / conda]
-  ```
-
-**Node.js / JavaScript:**
-- `bug_report.md` の環境欄に以下を追加：
-  ```
-  - Node Version: [e.g. 20.x]
-  - パッケージマネージャー: [npm / yarn / pnpm]
-  ```
-
-**dotfiles / shell:**
-- `bug_report.md` の環境欄に以下を追加：
-  ```
-  - Shell: [zsh / bash]
-  - macOS Version:
-  ```
-- `research.md` の調査ログ欄に「検証コマンド」欄を追加
-
-**Docker:**
-- `bug_report.md` の環境欄に以下を追加：
-  ```
-  - Docker Version:
-  - docker-compose Version:
-  ```
-
-**汎用:** ベーステンプレートをそのまま使用
-
-生成先：
-```bash
-mkdir -p .github/ISSUE_TEMPLATE
-# 調整済みテンプレートを書き込む
-```
-
-### 3. PR テンプレートの生成
-
-`~/.dotfiles/github/pull_request_template.md` を `.github/pull_request_template.md` にコピーする：
+- Issue テンプレート: `~/.dotfiles/github/ISSUE_TEMPLATE/` を `.github/ISSUE_TEMPLATE/` にコピーする。`bug_report.md` の環境欄に、言語の版を書く行を足す（例: `- Python Version: [e.g. 3.13]`）
+- PR テンプレート: `~/.dotfiles/github/pull_request_template.md` を `.github/` にコピーする
+- ラベル: GitHub のデフォルトのラベルを消し、次を作る
 
 ```bash
-cp ~/.dotfiles/github/pull_request_template.md .github/pull_request_template.md
-```
-
-### 4. ラベルのセットアップ
-
-既存のデフォルトラベルを削除してから、カスタムラベルを作成する：
-
-```bash
-# デフォルトラベルの削除
 gh label list --json name | jq -r '.[].name' | xargs -I {} gh label delete "{}" --yes
-
-# カスタムラベルの作成
 gh label create "feat"     --color "#0075ca" --description "新機能・機能追加"
 gh label create "fix"      --color "#d73a4a" --description "バグ修正"
 gh label create "docs"     --color "#0052cc" --description "ドキュメント"
@@ -100,31 +56,31 @@ gh label create "idea"     --color "#d876e3" --description "アイデア・提�
 gh label create "research" --color "#fbca04" --description "技術調査・検証"
 ```
 
-### 5. CI ワークフローの生成
+- Dependabot: アラートと自動の修正 PR をオンにする（全リポジトリでオンにすると決めている）
 
-プロジェクト種別に応じて、このスキルの `ci/` にあるひな形を `.github/workflows/ci.yml` にコピーする。判定した種別のものだけ読む。
+```bash
+gh api -X PUT "repos/{owner}/{repo}/vulnerability-alerts"
+gh api -X PUT "repos/{owner}/{repo}/automated-security-fixes"
+```
 
-| 種別 | ひな形 |
-|---|---|
-| Python | `ci/python.yml` |
-| Node.js / JavaScript / TypeScript | `ci/node.yml` |
-| dotfiles / shell | `ci/shell.yml` |
-| Go | `ci/go.yml` |
+### 4. 動かして確かめる
 
-**Docker・汎用:** CI ファイルは生成せず、ユーザーに確認する。
+言語のひな形を置いたときは、`~/.dotfiles/templates/README.md` の「使い方」のとおりに、`mise trust`、依存のインストール、`pre-commit install`、`mise run check` まで動かす。通らなければ、直してから報告する。
 
-### 6. 完了報告
+### 5. 完了報告
 
-以下の内容をユーザーに伝える：
-- 判定したプロジェクト種別
-- 生成したファイル一覧
-- セットアップしたラベル一覧
+- 判定した言語・場所と、CI を置いたか
+- 置いたファイルの一覧と、置かなかったもの（ぶつかったもの、言語のひな形がないもの）
+- セットアップしたラベルと、Dependabot をオンにしたか
+- `mise run check` の結果
 
 ## 注意事項
 
-- `.github/` ディレクトリはプロジェクトにコピー（シンボリックリンクではない）
+- ひな形はコピーする（シンボリックリンクにしない）。プロジェクトごとに直せるようにするため
+- ひな形を直したくなったら、プロジェクトではなく `~/.dotfiles/templates/` を直す（dotfiles の Issue → PR）
 
 ## Gotchas
 
-- GitHub リポジトリがまだ作成されていない場合、ラベルのセットアップはスキップしてファイル生成のみ行う
-- `gh label delete` が失敗する場合（権限不足など）はスキップして先に進む
+- GitHub のリポジトリがまだないときは、ラベルと Dependabot を飛ばしてファイルだけ置く。報告で「`gh repo create` のあとに、ラベルと Dependabot だけもう一度」と伝える
+- `gh label delete` が失敗する場合（権限不足など）は飛ばして先に進む
+- `pyproject.toml` は `readme = "README.md"` なので、README.md がないと uv が失敗する。なければ見出しだけの README.md を置く
