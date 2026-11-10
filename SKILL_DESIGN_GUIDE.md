@@ -2,6 +2,8 @@
 
 新しい Skill（`SKILL.md`）を作成・改修する際に参照するチェックリスト。
 
+出典: Claude Code 開発者 thariq 氏（@trq212）の「Lessons from Building Claude Code」シリーズ、特に「How we use skills」
+
 ## 作成・改修時のチェックリスト
 
 - [ ] **description はトリガー基準か**: 「ユーザー向け要約」ではなく「モデルがいつ起動すべきかの判断材料」になっているか。依頼されそうなフレーズを含めているか
