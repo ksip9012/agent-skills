@@ -1,20 +1,43 @@
-# skillsの置き場所方針
+# agent-skills
 
-skillは性質によって置き場所を使い分ける。個々のskill名の一覧は各`SKILL.md`のfrontmatter（name/description）で確認できるため、ここでは「どこに何を置くか」の方針のみを記す（個別skillの一覧は陳腐化しやすいためここには書かない）。
+Claude Code 用の自作 skill 集です。GitHub Flow で開発するときの、ブランチ・Issue・PR の作業と、新しいプロジェクトの初期化を skill にしています。
 
-## 方針
+自分の運用に合わせて書いているので、担当者（`ksip9012`）やひな形の場所（dotfiles の `templates/`）は、使うときに読み替えてください。
 
-- **グローバル（このリポジトリ, `~/.claude-skills/` = `~/.claude/skills`へのシンボリックリンク）**: どのプロジェクトでも同じロジックで動く、プロジェクト非依存のskill。例: `github-pr` `github-init` `github-issue-create` `github-branch` `github-issue-comment`
-- **プロジェクトローカル（各リポジトリ内の`.claude/skills/`）**: そのプロジェクト固有のファイル構造・ルールに密結合したskill。特に、claude.ai/codeのクラウドセッションから使う必要があるskillは、クラウドセッションが対象リポジトリしかクローンしないため、必ずここに置く（グローバルに置くとクラウドセッションから見えなくなる）。例: `life`リポジトリの`inbox-triage`（`gtd/001_inbox.md`等、そのVault固有の構造に依存し、会社PC/携帯からのInbox整理に使うためプロジェクトローカルに置いている）
+## 入っている skill
 
-## 設計時の参考
+| skill | 内容 |
+| --- | --- |
+| [`github-branch`](./github-branch/SKILL.md) | Issue 番号からブランチ名を作り、main を最新にしてからブランチを切る |
+| [`github-issue-create`](./github-issue-create/SKILL.md) | テンプレートに沿って Issue を作る |
+| [`github-issue-comment`](./github-issue-comment/SKILL.md) | push のあと、作業が途中の Issue に進み具合をコメントする |
+| [`github-pr`](./github-pr/SKILL.md) | 作業が終わったら PR を作り、関連する Issue を閉じる形にする |
+| [`github-init`](./github-init/SKILL.md) | 新しいプロジェクトに、言語に合わせたひな形・テンプレート・ラベル・Dependabot を置く |
 
-新しいskillを作成・改修する際は `SKILL_DESIGN_GUIDE.md` のチェックリストを参照する。
+## 使い方
 
-## 他ツールとの関係
+クローンして、`~/.claude/skills` からリンクします。
 
-Claude Code以外のツール（Gemini CLI: `.gemini/skills/`、Termy: `.agents/skills/` 等）は、ツールごとに独自のskill発見場所を持つ。これらは統一できないため、同じロジックを複数ツールで使いたい場合は、実体を複製せず薄いラッパーからルールの実体（例: 各リポジトリの`008_rules/`等）を参照する形にする。
+```zsh
+git clone https://github.com/ksip9012/agent-skills.git ~/.claude-skills
+ln -s ~/.claude-skills ~/.claude/skills
+```
 
-## 既知の課題
+Claude Code で `/github-pr` のように呼び出すか、「PR を作って」のように頼むと動きます。
 
-- `life`リポジトリの`.gemini/skills/skill-gtd-inbox/`が独自にルールを複製しており、パスの記述が古くなっている（未修正、2026-09-20時点）
+## skill の置き場所の方針
+
+skill は性質によって置き場所を使い分けています。
+
+- **このリポジトリ（`~/.claude/skills`）**: どのプロジェクトでも同じロジックで動く、プロジェクトに依存しない skill
+- **各リポジトリの `.claude/skills/`**: そのプロジェクトのファイル構造やルールに結びついた skill。claude.ai/code のクラウドセッションはそのリポジトリしかクローンしないので、クラウドで使う skill もここに置く
+
+Claude Code 以外のツールは、それぞれ別の場所から skill を探します。同じロジックを複数のツールで使いたいときは、実体を複製せず、薄いラッパーからルールの実体を参照する形にします。
+
+## skill を作るときの参考
+
+新しい skill を作る・直すときは [`SKILL_DESIGN_GUIDE.md`](./SKILL_DESIGN_GUIDE.md) のチェックリストを参照します。
+
+## License
+
+[MIT](./LICENSE)
