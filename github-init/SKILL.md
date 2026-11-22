@@ -35,6 +35,7 @@ allowed-tools: Bash, Read, Glob, Write
 - 既にあるファイルは上書きしない。ぶつかるものがあれば、一覧を見せて、どうするか聞く
 - `.gitignore` は、common と言語のものを足し合わせる。既にあれば、ない行だけ足す
 - 名前の置き換え: `package-name`（`pyproject.toml` の name）と `package_name`（`src/` の下のフォルダと、テストの import）を、プロジェクトの名前にする。Python のパッケージ名はハイフンをアンダースコアにする
+- Python で `src/` を使わず直下にモジュールを置いているリポジトリでは、`pyproject.toml` に `[tool.uv]` の `package = false` を足す。ひな形のビルドの設定は `src/<package_name>/` を探すので、足さないと `uv sync` が失敗する
 - CI を置かないときは、`.github/workflows/` と `.github/dependabot.yml` を置かない
 - **言語のひな形がないとき**: `mise run check` のタスクがないので、CI と pre-commit を置かない。common の残り（`.gitignore`・`decisions/`）だけ置き、「言語のひな形がないので、`mise.toml` に `[tasks.check]` を書いてから CI と pre-commit を置く」と知らせる
 
@@ -42,10 +43,16 @@ allowed-tools: Bash, Read, Glob, Write
 
 - Issue テンプレート: `~/.dotfiles/github/ISSUE_TEMPLATE/` を `.github/ISSUE_TEMPLATE/` にコピーする。`bug_report.md` の環境欄に、言語の版を書く行を足す（例: `- Python Version: [e.g. 3.13]`）
 - PR テンプレート: `~/.dotfiles/github/pull_request_template.md` を `.github/` にコピーする
-- ラベル: GitHub のデフォルトのラベルを消し、次を作る
+- ラベル: 新しいリポジトリか既存のリポジトリかで分ける
+  - 見分け方: Issue か PR が 1件でもあれば既存のリポジトリとする（`gh issue list --state all --limit 1`、`gh pr list --state all --limit 1`）
+  - 新しいリポジトリ: GitHub のデフォルトのラベルを消してから、下のラベルを作る
+  - 既存のリポジトリ: ラベルを消さない。Issue や PR に付いたラベルが外れるため。下のうち、ないラベルだけ作る
+  - 既にあるラベルに `gh label create --force` を使わない。色と説明が上書きされる
 
 ```bash
+# 新しいリポジトリだけ: デフォルトのラベルを消す
 gh label list --json name | jq -r '.[].name' | xargs -I {} gh label delete "{}" --yes
+
 gh label create "feat"     --color "#0075ca" --description "新機能・機能追加"
 gh label create "fix"      --color "#d73a4a" --description "バグ修正"
 gh label create "docs"     --color "#0052cc" --description "ドキュメント"
@@ -71,7 +78,7 @@ gh api -X PUT "repos/{owner}/{repo}/automated-security-fixes"
 
 - 判定した言語・場所と、CI を置いたか
 - 置いたファイルの一覧と、置かなかったもの（ぶつかったもの、言語のひな形がないもの）
-- セットアップしたラベルと、Dependabot をオンにしたか
+- セットアップしたラベル（既存のリポジトリなら、足したものだけ）と、Dependabot をオンにしたか
 - `mise run check` の結果
 
 ## 注意事項
