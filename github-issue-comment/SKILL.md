@@ -24,11 +24,14 @@ git branch --show-current
 
 1. 現在のブランチ名を取得し、`issue-{番号}` の部分から Issue 番号を特定する
 2. 直近の push 内容（コミットメッセージ・変更ファイル）を確認する：
+
    ```bash
    git log -1 --pretty=format:"%s" 
    git diff HEAD~1 --name-only
    ```
+
 3. 以下の形式でコメントを作成する：
+
    ```bash
    gh issue comment <番号> --body "$(cat <<'EOF'
    ## 作業ログ

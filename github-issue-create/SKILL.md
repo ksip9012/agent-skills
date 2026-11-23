@@ -38,16 +38,16 @@ GitHub Issue をプロジェクトのテンプレートに基づいて作成す�
 4. 本文の「備考」の前（なければ末尾）に、見落としやすい作業の欄を足す（下の「見落としやすい作業の欄」）
 5. 以下のコマンドで Issue を作成する：
 
-```bash
-gh issue create \
-  --title "タイトル" \
-  --label "ラベル" \
-  --assignee "ksip9012" \
-  --body "$(cat <<'EOF'
-テンプレートの本文
-EOF
-)"
-```
+   ```bash
+   gh issue create \
+     --title "タイトル" \
+     --label "ラベル" \
+     --assignee "ksip9012" \
+     --body "$(cat <<'EOF'
+   テンプレートの本文
+   EOF
+   )"
+   ```
 
 6. 作成された Issue の URL をユーザーに伝える
 
@@ -63,10 +63,12 @@ EOF
 
 - assignees は常に `ksip9012` を設定する
 - ラベルが存在しない場合は作成してから Issue を作成する：
+
   ```bash
   gh label create "ラベル名" --color "カラーコード" --description "説明"
   ```
-- タイトルはテンプレートの `title` プレフィックスに従う（例：`[fix] `, `[research] `）
+
+- タイトルはテンプレートの `title` プレフィックスに従う（例：`[fix]`, `[research]`。プレフィックスのあとに半角の空白を 1つ入れる）
 
 ## ラベルのカラーコード
 
