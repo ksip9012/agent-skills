@@ -1,0 +1,20 @@
+[tools]
+# 版の選び方: Python は最新の 1つ前のマイナー版（作者の dotfiles の decisions/0007）
+python = "3.14"
+# markdownlint-cli2 を動かすため
+node = "26"
+"npm:markdownlint-cli2" = "0.24"
+pre-commit = "4.7"
+
+# 手元・pre-commit・CI で同じチェックを動かす
+[tasks.check]
+description = "SKILL.md の frontmatter とスキルが指すパス、Markdown の書き方"
+run = [
+  "python scripts/check_skills.py",
+  "markdownlint-cli2 '**/*.md'",
+]
+
+# 自動で直せる Markdown の書き方を直す。差分を見てからコミットする
+[tasks.fix]
+description = "markdownlint で直せるものを直す"
+run = "markdownlint-cli2 --fix '**/*.md'"

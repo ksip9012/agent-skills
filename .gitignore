@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+
+# Python のキャッシュ
+__pycache__/
+
+# 手元だけの設定
+mise.local.toml

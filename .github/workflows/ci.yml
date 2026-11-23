@@ -1,0 +1,26 @@
+# チェックの中身は mise.toml の [tasks.check] に書く（手元・pre-commit と同じコマンド）。
+# この YAML は「チェックアウト → mise で版をそろえる → mise run で動かす」だけにする
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # mise は信頼していない設定ファイルを読まないので、このリポジトリの mise.toml を信頼させる
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      # スキルが指すパスは dotfiles の中なので、公開している dotfiles を取ってきて確かめる
+      DOTFILES_DIR: ${{ github.workspace }}/.dotfiles
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: ksip9012/dotfiles
+          path: .dotfiles
+      - uses: jdx/mise-action@v5
+      - run: mise run check

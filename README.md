@@ -38,6 +38,16 @@ Claude Code 以外のツールは、それぞれ別の場所から skill を探�
 
 新しい skill を作る・直すときは [`SKILL_DESIGN_GUIDE.md`](./SKILL_DESIGN_GUIDE.md) のチェックリストを参照します。
 
+## チェック
+
+`mise run check` で、各 `SKILL.md` の frontmatter（`name` がフォルダ名と同じか、`description` があるか）、スキルが指す dotfiles のパスと相対リンクの先があるか、Markdown の書き方（markdownlint）を確かめます。同じコマンドを pre-commit と GitHub Actions からも動かします。CI では dotfiles のリポジトリを取ってきて、そこを `DOTFILES_DIR` として渡します。
+
+```zsh
+mise install
+mise run check
+pre-commit install  # コミットの前にも動かすとき
+```
+
 ## License
 
 [MIT](./LICENSE)
